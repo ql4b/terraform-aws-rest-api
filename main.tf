@@ -9,6 +9,24 @@ resource "aws_api_gateway_rest_api" "api" {
   tags = module.this.tags
 }
 
+resource "aws_api_gateway_deployment" "placeholder" {
+  for_each    = toset(local.stages)
+  rest_api_id = aws_api_gateway_rest_api.api[each.key].id
+  
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+resource "aws_api_gateway_stage" "stage" {
+  for_each      = toset(local.stages)
+  stage_name    = each.key
+  rest_api_id   = aws_api_gateway_rest_api.api[each.key].id
+  deployment_id = aws_api_gateway_deployment.placeholder[each.key].id
+  
+  tags = module.this.tags
+}
+
 resource "aws_api_gateway_api_key" "default" {
   for_each = toset(local.stages)
   name = join("-", [
