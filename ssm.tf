@@ -1,5 +1,5 @@
 locals {
-  ssm_prefix = "/${module.this.namespace}/${module.this.name}"
+  ssm_prefix = var.ssm_prefix != null ? var.ssm_prefix : "/${module.this.namespace}/${module.this.name}"
 }
 
 resource "aws_ssm_parameter" "rest_api_id" {

@@ -9,9 +9,30 @@ resource "aws_api_gateway_rest_api" "api" {
   tags = module.this.tags
 }
 
+resource "aws_api_gateway_method" "placeholder" {
+  for_each      = toset(local.stages)
+  rest_api_id   = aws_api_gateway_rest_api.api[each.key].id
+  resource_id   = aws_api_gateway_rest_api.api[each.key].root_resource_id
+  http_method   = "GET"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "placeholder" {
+  for_each    = toset(local.stages)
+  rest_api_id = aws_api_gateway_rest_api.api[each.key].id
+  resource_id = aws_api_gateway_rest_api.api[each.key].root_resource_id
+  http_method = aws_api_gateway_method.placeholder[each.key].http_method
+  type        = "MOCK"
+}
+
 resource "aws_api_gateway_deployment" "placeholder" {
   for_each    = toset(local.stages)
   rest_api_id = aws_api_gateway_rest_api.api[each.key].id
+  
+  depends_on = [
+    aws_api_gateway_method.placeholder,
+    aws_api_gateway_integration.placeholder
+  ]
   
   lifecycle {
     create_before_destroy = true
@@ -48,6 +69,8 @@ resource "aws_api_gateway_usage_plan" "default" {
       stage  = api_stages.value
     }
   }
+  
+  depends_on = [aws_api_gateway_stage.stage]
   
   tags = module.this.tags
 }
