@@ -70,6 +70,8 @@ resource "aws_api_gateway_usage_plan" "default" {
     }
   }
   
+  depends_on = [aws_api_gateway_stage.stage]
+  
   tags = module.this.tags
 }
 
