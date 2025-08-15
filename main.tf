@@ -1,10 +1,17 @@
 locals {
   stages = var.stages
+  endpoint_type = var.endpoint_type
 }
 
 resource "aws_api_gateway_rest_api" "api" {
   for_each = toset(local.stages)
   name     = "${module.this.id}-${each.key}"
+
+  endpoint_configuration {
+    types = [
+      local.endpoint_type
+    ]
+  }
   
   tags = module.this.tags
 }
