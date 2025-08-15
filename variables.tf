@@ -15,3 +15,9 @@ variable "endpoint_type" {
   description = "API Gateway endpoint type (e.g., 'REGIONAL', 'EDGE', 'PRIVATE')"
   default     = "REGIONAL"
 }
+
+variable "enable_metrics" {
+  type        = bool
+  description = "Enable API Gateway metrics"
+  default     = true
+}

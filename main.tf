@@ -1,6 +1,7 @@
 locals {
   stages = var.stages
   endpoint_type = var.endpoint_type
+  enable_metrics = var.enable_metrics
 }
 
 resource "aws_api_gateway_rest_api" "api" {
@@ -51,8 +52,20 @@ resource "aws_api_gateway_stage" "stage" {
   stage_name    = each.key
   rest_api_id   = aws_api_gateway_rest_api.api[each.key].id
   deployment_id = aws_api_gateway_deployment.placeholder[each.key].id
-  
+
   tags = module.this.tags
+}
+
+
+resource "aws_api_gateway_method_settings" "settings" {
+  for_each    = toset(local.stages)
+  rest_api_id = aws_api_gateway_rest_api.api[each.key].id
+  stage_name  = aws_api_gateway_stage.stage[each.key].stage_name
+  method_path = "*/*"
+  
+  settings {
+    metrics_enabled = local.enable_metrics
+  }
 }
 
 resource "aws_api_gateway_api_key" "default" {
