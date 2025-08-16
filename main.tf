@@ -42,6 +42,13 @@ resource "aws_api_gateway_deployment" "placeholder" {
     aws_api_gateway_integration.placeholder
   ]
   
+  triggers = {
+    redeployment = sha1(jsonencode([
+      aws_api_gateway_method.placeholder[each.key].id,
+      aws_api_gateway_integration.placeholder[each.key].id,
+    ]))
+  }
+  
   lifecycle {
     create_before_destroy = true
   }
