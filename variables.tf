@@ -22,15 +22,27 @@ variable "enable_metrics" {
   default     = true
 }
 
+variable "stage_throttle_rate_limit" {
+  type        = number
+  description = "API Gateway stage throttle rate limit (requests per second)"
+  default     = null
+}
+
+variable "stage_throttle_burst_limit" {
+  type        = number
+  description = "API Gateway stage throttle burst limit"
+  default     = null
+}
+
 variable "throttle_rate_limit" {
   type        = number
-  description = "API Gateway throttle rate limit (requests per second)"
+  description = "API Gateway usage plan throttle rate limit (requests per second)"
   default     = null
 }
 
 variable "throttle_burst_limit" {
   type        = number
-  description = "API Gateway throttle burst limit"
+  description = "API Gateway usage plan throttle burst limit"
   default     = null
 }
 

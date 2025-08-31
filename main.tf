@@ -71,7 +71,9 @@ resource "aws_api_gateway_method_settings" "settings" {
   method_path = "*/*"
   
   settings {
-    metrics_enabled = local.enable_metrics
+    metrics_enabled        = local.enable_metrics
+    throttling_rate_limit  = var.stage_throttle_rate_limit
+    throttling_burst_limit = var.stage_throttle_burst_limit
   }
 }
 
