@@ -71,7 +71,9 @@ resource "aws_api_gateway_method_settings" "settings" {
   method_path = "*/*"
   
   settings {
-    metrics_enabled = local.enable_metrics
+    metrics_enabled        = local.enable_metrics
+    throttling_rate_limit  = var.stage_throttle_rate_limit
+    throttling_burst_limit = var.stage_throttle_burst_limit
   }
 }
 
@@ -96,6 +98,22 @@ resource "aws_api_gateway_usage_plan" "default" {
       stage  = api_stages.value
     }
   }
+
+  dynamic "throttle_settings" {
+    for_each = var.throttle_rate_limit != null ? [1] : []
+    content {
+      rate_limit  = var.throttle_rate_limit
+      burst_limit = var.throttle_burst_limit
+    }
+  }
+
+  dynamic "quota_settings" {
+    for_each = var.quota_limit != null ? [1] : []
+    content {
+      limit  = var.quota_limit
+      period = var.quota_period
+    }
+  }
   
   depends_on = [aws_api_gateway_stage.stage]
   
@@ -108,3 +126,37 @@ resource "aws_api_gateway_usage_plan_key" "default" {
   key_type      = "API_KEY"
   usage_plan_id = aws_api_gateway_usage_plan.default.id
 }
+
+# Gateway responses for proper error handling
+resource "aws_api_gateway_gateway_response" "throttled" {
+  for_each      = toset(local.stages)
+  rest_api_id   = aws_api_gateway_rest_api.api[each.key].id
+  response_type = "THROTTLED"
+  status_code   = "429"
+  
+  response_templates = {
+    "application/json" = jsonencode({
+      error   = "Too Many Requests"
+      message = "Rate limit exceeded. Please retry with exponential backoff."
+      retryAfter = 5
+    })
+  }
+  
+  response_parameters = {
+    "gatewayresponse.header.Retry-After" = "'5'"
+  }
+}
+
+# resource "aws_api_gateway_gateway_response" "default_5xx" {
+#   for_each      = toset(local.stages)
+#   rest_api_id   = aws_api_gateway_rest_api.api[each.key].id
+#   response_type = "DEFAULT_5XX"
+#   status_code   = "502"
+  
+#   response_templates = {
+#     "application/json" = jsonencode({
+#       error   = "Service Unavailable"
+#       message = "Downstream service temporarily unavailable"
+#     })
+#   }
+# }
