@@ -96,6 +96,22 @@ resource "aws_api_gateway_usage_plan" "default" {
       stage  = api_stages.value
     }
   }
+
+  dynamic "throttle_settings" {
+    for_each = var.throttle_rate_limit != null ? [1] : []
+    content {
+      rate_limit  = var.throttle_rate_limit
+      burst_limit = var.throttle_burst_limit
+    }
+  }
+
+  dynamic "quota_settings" {
+    for_each = var.quota_limit != null ? [1] : []
+    content {
+      limit  = var.quota_limit
+      period = var.quota_period
+    }
+  }
   
   depends_on = [aws_api_gateway_stage.stage]
   
