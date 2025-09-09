@@ -63,7 +63,6 @@ resource "aws_api_gateway_stage" "stage" {
   tags = module.this.tags
 }
 
-
 resource "aws_api_gateway_method_settings" "settings" {
   for_each    = toset(local.stages)
   rest_api_id = aws_api_gateway_rest_api.api[each.key].id
@@ -126,37 +125,3 @@ resource "aws_api_gateway_usage_plan_key" "default" {
   key_type      = "API_KEY"
   usage_plan_id = aws_api_gateway_usage_plan.default.id
 }
-
-# Gateway responses for proper error handling
-resource "aws_api_gateway_gateway_response" "throttled" {
-  for_each      = toset(local.stages)
-  rest_api_id   = aws_api_gateway_rest_api.api[each.key].id
-  response_type = "THROTTLED"
-  status_code   = "429"
-  
-  response_templates = {
-    "application/json" = jsonencode({
-      error   = "Too Many Requests"
-      message = "Rate limit exceeded. Please retry with exponential backoff."
-      retryAfter = 5
-    })
-  }
-  
-  response_parameters = {
-    "gatewayresponse.header.Retry-After" = "'5'"
-  }
-}
-
-# resource "aws_api_gateway_gateway_response" "default_5xx" {
-#   for_each      = toset(local.stages)
-#   rest_api_id   = aws_api_gateway_rest_api.api[each.key].id
-#   response_type = "DEFAULT_5XX"
-#   status_code   = "502"
-  
-#   response_templates = {
-#     "application/json" = jsonencode({
-#       error   = "Service Unavailable"
-#       message = "Downstream service temporarily unavailable"
-#     })
-#   }
-# }
