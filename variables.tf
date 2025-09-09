@@ -61,3 +61,34 @@ variable "quota_period" {
     error_message = "Quota period must be DAY, WEEK, or MONTH."
   }
 }
+
+variable "create_usage_plan" {
+  description = "Whether to create usage plan and API keys"
+  type        = bool
+  default     = true
+}
+
+variable "api_key_required" {
+  description = "Whether to require an API key for API Gateway methods"
+  type        = bool
+  default     = false
+}
+
+variable "description" {
+  type        = string
+  description = "Description for the API Gateway"
+  default     = null
+}
+
+variable "cors_configuration" {
+  type = object({
+    allow_credentials = bool
+    allow_headers     = list(string)
+    allow_methods     = list(string)
+    allow_origins     = list(string)
+    expose_headers    = list(string)
+    max_age          = number
+  })
+  description = "CORS configuration for the API Gateway"
+  default     = null
+}

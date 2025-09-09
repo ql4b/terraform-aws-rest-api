@@ -7,6 +7,7 @@ locals {
 resource "aws_api_gateway_rest_api" "api" {
   for_each = toset(local.stages)
   name     = "${module.this.id}-${each.key}"
+  description = var.description
 
   endpoint_configuration {
     types = [
@@ -76,8 +77,9 @@ resource "aws_api_gateway_method_settings" "settings" {
   }
 }
 
+# API Keys (conditional)
 resource "aws_api_gateway_api_key" "default" {
-  for_each = toset(local.stages)
+  for_each = var.create_usage_plan ? toset(local.stages) : []
   name = join("-", [
     module.this.id,
     "key",
@@ -87,7 +89,9 @@ resource "aws_api_gateway_api_key" "default" {
   tags = module.this.tags
 }
 
+# Usage Plan (conditional)
 resource "aws_api_gateway_usage_plan" "default" {
+  count = var.create_usage_plan ? 1 : 0
   name = "${module.this.id}-default-plan"
 
   dynamic "api_stages" {
@@ -119,9 +123,10 @@ resource "aws_api_gateway_usage_plan" "default" {
   tags = module.this.tags
 }
 
+# Link API Keys to Usage Plan (conditional)
 resource "aws_api_gateway_usage_plan_key" "default" {
-  for_each = toset(local.stages)
+  for_each = var.create_usage_plan ? toset(local.stages) : []
   key_id        = aws_api_gateway_api_key.default[each.key].id
   key_type      = "API_KEY"
-  usage_plan_id = aws_api_gateway_usage_plan.default.id
+  usage_plan_id = aws_api_gateway_usage_plan.default[0].id
 }
