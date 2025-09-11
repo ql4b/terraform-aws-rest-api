@@ -21,7 +21,7 @@ resource "aws_ssm_parameter" "rest_api_root_resource_id" {
 }
 
 resource "aws_ssm_parameter" "rest_api_key" {
-  for_each = toset(local.stages)
+  for_each = var.create_usage_plan ? toset(local.stages) : []
   name     = "${local.ssm_prefix}/${each.key}/restApiKey"
   type     = "String"
   value    = aws_api_gateway_api_key.default[each.key].name
