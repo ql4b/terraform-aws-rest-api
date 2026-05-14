@@ -59,6 +59,26 @@ resource "aws_api_gateway_stage" "stage" {
   rest_api_id   = aws_api_gateway_rest_api.api[each.key].id
   deployment_id = aws_api_gateway_deployment.placeholder[each.key].id
 
+  dynamic "access_log_settings" {
+    for_each = var.access_log_destination_arn != null ? [1] : []
+    content {
+      destination_arn = var.access_log_destination_arn
+      format = jsonencode({
+        requestId      = "$context.requestId"
+        ip             = "$context.identity.sourceIp"
+        requestTime    = "$context.requestTime"
+        httpMethod     = "$context.httpMethod"
+        resourcePath   = "$context.resourcePath"
+        status         = "$context.status"
+        responseLength = "$context.responseLength"
+        latency        = "$context.responseLatency"
+        integrationLatency = "$context.integration.latency"
+        errorMessage   = "$context.error.message"
+        apiKey         = "$context.identity.apiKey"
+      })
+    }
+  }
+
   tags = module.this.tags
 }
 
@@ -70,6 +90,7 @@ resource "aws_api_gateway_method_settings" "settings" {
   
   settings {
     metrics_enabled        = local.enable_metrics
+    logging_level          = var.access_log_destination_arn != null ? "INFO" : "OFF"
     throttling_rate_limit  = var.stage_throttle_rate_limit
     throttling_burst_limit = var.stage_throttle_burst_limit
   }

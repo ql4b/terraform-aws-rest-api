@@ -92,3 +92,9 @@ variable "cors_configuration" {
   description = "CORS configuration for the API Gateway"
   default     = null
 }
+
+variable "access_log_destination_arn" {
+  type        = string
+  description = "CloudWatch Log Group ARN for API Gateway access logging. Enables access logs when set."
+  default     = null
+}
