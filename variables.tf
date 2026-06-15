@@ -10,6 +10,12 @@ variable "ssm_prefix" {
   default     = null
 }
 
+variable "enable_ssm_parameters" {
+  type        = bool
+  description = "Whether to create SSM parameters for API resource references"
+  default     = true
+}
+
 variable "endpoint_type" {
   type        = string
   description = "API Gateway endpoint type (e.g., 'REGIONAL', 'EDGE', 'PRIVATE')"
