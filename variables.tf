@@ -10,6 +10,12 @@ variable "ssm_prefix" {
   default     = null
 }
 
+variable "enable_ssm_parameters" {
+  type        = bool
+  description = "Whether to create SSM parameters for API resource references"
+  default     = true
+}
+
 variable "endpoint_type" {
   type        = string
   description = "API Gateway endpoint type (e.g., 'REGIONAL', 'EDGE', 'PRIVATE')"
@@ -90,5 +96,11 @@ variable "cors_configuration" {
     max_age          = number
   })
   description = "CORS configuration for the API Gateway"
+  default     = null
+}
+
+variable "access_log_destination_arn" {
+  type        = string
+  description = "CloudWatch Log Group ARN for API Gateway access logging. Enables access logs when set."
   default     = null
 }
